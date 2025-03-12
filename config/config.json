@@ -1,0 +1,25 @@
+{
+  "service_address": {
+    "glossika": ":8000"
+  },
+  "database_management_system" : {
+    "mysql": {
+      "glossika": {
+        "host": "db",
+        "port": 3306,
+        "account": "root",
+        "password": "",
+        "database": "glossika",
+        "max_open": 8,
+        "max_idle": 3
+      }
+    },
+    "redis": {
+      "glossika": {
+        "address": "cache:6379",
+        "password": "",
+        "db": 0
+      }
+    }
+  }
+}

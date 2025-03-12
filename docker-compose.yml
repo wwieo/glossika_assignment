@@ -1,0 +1,30 @@
+services:
+  app:
+    build:
+      context: .
+    container_name: glossika
+    restart: on-failure
+    image: glossika
+    ports:
+      - "8000:8000"
+    working_dir: /app
+    depends_on:
+      - db
+      - cache
+  db:
+    container_name: mysql
+    image: mysql:latest
+    volumes:
+      - ./migrations:/docker-entrypoint-initdb.d
+    environment:
+      - MYSQL_ALLOW_EMPTY_PASSWORD=true
+      - MYSQL_DATABASE="account"
+      - MYSQL_USER="root"
+      - MYSQL_PASSWORD=""
+    ports:
+      - "3306:3306"
+  cache:
+    container_name: redis
+    image: redis
+    ports:
+      - "6379:6379"

@@ -1,0 +1,2 @@
+CREATE DATABASE IF NOT EXISTS meme_coin;
+USE meme_coin;
