@@ -5,7 +5,7 @@ import (
 	"fmt"
 	"github.com/mitchellh/mapstructure"
 	"github.com/spf13/viper"
-	"meme_coin_api/service/internal/flags"
+	"glossika/service/internal/flags"
 	"os"
 )
 

@@ -3,8 +3,8 @@ package database
 import (
 	"context"
 	"github.com/redis/go-redis/v9"
+	"glossika/service/internal/config"
 	"log"
-	"meme_coin_api/service/internal/config"
 )
 
 func newRedis(ctx context.Context, name string, r config.Redis) *redis.Client {

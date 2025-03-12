@@ -20,8 +20,8 @@ type Account struct {
 	Email     string    `json:"email" gorm:"type:varchar(255);not null;column:email;uniqueIndex"`
 	Status    Status    `json:"status" gorm:"type:tinyint;not null;column:status"`
 	Password  string    `json:"-" gorm:"type:varchar(255);not null;column:password"`
-	CreatedAt time.Time `json:"created_at" gorm:"autoCreateTime;column:created_at"`
-	UpdatedAt time.Time `json:"updated_at" gorm:"autoUpdateTime;column:updated_at"`
+	CreatedAt time.Time `json:"-" gorm:"autoCreateTime;column:created_at"`
+	UpdatedAt time.Time `json:"-" gorm:"autoUpdateTime;column:updated_at"`
 }
 
 func (*Account) TableName() string {

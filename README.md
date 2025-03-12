@@ -23,5 +23,5 @@ deployment.
    ```
 4. Then you can open the local Swagger interface to explore the API.
    ```
-   http://localhost:8000/meme_coin_api/swagger/index.html
+   http://localhost:8000/glossika/swagger/index.html
    ```

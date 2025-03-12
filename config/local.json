@@ -21,5 +21,8 @@
         "db": 0
       }
     }
+  },
+  "jwt": {
+    "secret": "jwt_secret_for_glossika"
   }
 }

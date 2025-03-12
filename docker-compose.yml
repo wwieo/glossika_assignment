@@ -2,7 +2,7 @@ services:
   app:
     build:
       context: .
-    container_name: glossika
+    container_name: account
     restart: on-failure
     image: glossika
     ports:

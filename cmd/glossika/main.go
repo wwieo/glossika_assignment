@@ -1,6 +1,6 @@
 package main
 
-import "meme_coin_api/service"
+import "glossika/service"
 
 // @title		Glossika Assignment
 // @version	1.0

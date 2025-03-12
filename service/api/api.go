@@ -5,9 +5,9 @@ import (
 	"github.com/gin-gonic/gin"
 	swaggerFiles "github.com/swaggo/files"
 	ginSwagger "github.com/swaggo/gin-swagger"
+	_ "glossika/docs"
+	"glossika/service/internal/config"
 	"go.uber.org/dig"
-	_ "meme_coin_api/docs"
-	"meme_coin_api/service/internal/config"
 	"net/http"
 	"time"
 )
@@ -21,13 +21,13 @@ type servicePack struct {
 
 func NewServer(pack servicePack) *http.Server {
 	return &http.Server{
-		Addr:    pack.ServiceAddress.MemeCoin,
+		Addr:    pack.ServiceAddress.Glossika,
 		Handler: pack.Handler,
 	}
 }
 
 func NewRouterRoot(pack servicePack) *gin.RouterGroup {
-	return pack.Handler.Group("meme_coin_api")
+	return pack.Handler.Group("glossika")
 }
 
 func NewGinEngine() *gin.Engine {

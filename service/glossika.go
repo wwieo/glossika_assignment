@@ -3,14 +3,14 @@ package service
 import (
 	"context"
 	"fmt"
+	"glossika/service/api"
+	"glossika/service/controller/accountCtrl"
+	"glossika/service/internal/config"
+	"glossika/service/internal/database"
+	"glossika/service/internal/flags"
+	"glossika/service/internal/model"
 	"go.uber.org/dig"
 	"gorm.io/gorm"
-	"meme_coin_api/service/api"
-	"meme_coin_api/service/controller/memeCoinCtrl"
-	"meme_coin_api/service/internal/config"
-	"meme_coin_api/service/internal/database"
-	"meme_coin_api/service/internal/flags"
-	"meme_coin_api/service/internal/model"
 	"net/http"
 )
 
@@ -77,7 +77,7 @@ func (srv *glossika) provideService(container *dig.Container) {
 }
 
 func (srv *glossika) provideController(container *dig.Container) {
-	if err := container.Provide(memeCoinCtrl.New); err != nil {
+	if err := container.Provide(accountCtrl.New); err != nil {
 		panic(err)
 	}
 }
@@ -85,7 +85,7 @@ func (srv *glossika) provideController(container *dig.Container) {
 type migratePack struct {
 	dig.In
 
-	MySQLGlossika *gorm.DB `name:"meme_coin"`
+	MySQLGlossika *gorm.DB `name:"glossika"`
 }
 
 func (srv *glossika) invokeDBMigrate(pack migratePack) {
@@ -99,13 +99,13 @@ func (srv *glossika) invokeApiRoutes(container *dig.Container) {
 		panic(err)
 	}
 
-	if err := container.Invoke(api.NewGlossika); err != nil {
+	if err := container.Invoke(api.NewAccount); err != nil {
 		panic(err)
 	}
 }
 
 func (srv *glossika) run(server *http.Server) {
-	fmt.Printf("Meme Coin API starts at %s\n", server.Addr)
+	fmt.Printf("Glossika API starts at %s\n", server.Addr)
 	if err := server.ListenAndServe(); err != nil && err != http.ErrServerClosed {
 		panic(err)
 	}

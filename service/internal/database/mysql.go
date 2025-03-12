@@ -2,11 +2,11 @@ package database
 
 import (
 	"fmt"
+	"glossika/service/internal/config"
 	"gorm.io/driver/mysql"
 	"gorm.io/gorm"
 	"gorm.io/gorm/logger"
 	"log"
-	"meme_coin_api/service/internal/config"
 )
 
 func newMySQL(dbName string, db config.MySQL) *gorm.DB {

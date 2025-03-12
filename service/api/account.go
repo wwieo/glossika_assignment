@@ -3,21 +3,21 @@ package api
 import (
 	"github.com/asaskevich/govalidator"
 	"github.com/gin-gonic/gin"
+	"glossika/service/controller/accountCtrl"
+	"glossika/service/internal/errorx"
+	boAccount "glossika/service/internal/model/bo/account"
 	"go.uber.org/dig"
-	"meme_coin_api/service/controller/accountCtrl"
-	"meme_coin_api/service/internal/errorx"
-	boAccount "meme_coin_api/service/internal/model/bo/account"
 	"net/http"
-	"strconv"
+	"regexp"
 )
 
 func NewAccount(pack accountPack) {
 	m := &account{pack: pack}
 	group := pack.Root.Group("account")
 	{
-		group.POST("register", m.createAccount)
-		group.GET("verify", m.getAccount)
-		group.POST("login", m.pokeAccount)
+		group.GET("verify", m.register)
+		group.POST("register", m.register)
+		group.POST("login", m.login)
 	}
 }
 
@@ -32,65 +32,45 @@ type account struct {
 	pack accountPack
 }
 
-// getAccount
+// register
 //
-//	@Summary	Retrieve data for a meme coin
-//	@Tags		meme_coin
+//	@Summary	Register an account
+//	@Tags		account
 //	@version	1.0
 //	@produce	json
-//	@Param		id				path		int	true	"id = ?"
-//	@Success	200				{object}	boAccount.GetReply
-//	@Failure	400				{object}	errorx.ErrorResponse
-//	@Router		/meme_coin/{id}	[GET]
-func (api *account) getAccount(ctx *gin.Context) {
-	id, err := strconv.Atoi(ctx.Param("id"))
-	if err != nil {
-		errorx.RespondWithError(ctx, http.StatusBadRequest, errorx.ParamKeyRequired)
-		return
-	}
-
-	args := boAccount.GetArgs{
-		ID: int64(id),
-	}
-	result, err := api.pack.AccountCtrl.Get(ctx, args)
-	if err != nil {
-		errorx.RespondWithError(ctx, http.StatusBadRequest, err)
-		return
-	}
-
-	ctx.JSON(http.StatusOK, result)
-}
-
-// createAccount
-//
-//	@Summary	Create a meme coin
-//	@Tags		meme_coin
-//	@version	1.0
-//	@produce	json
-//	@Param		request	body		api.createAccount.body	true	"Request payload for creating a meme coin"
-//	@Success	200		{object}	boAccount.CreateReply
+//	@Param		request	body		api.register.body	true	"Request payload for creating a account"
+//	@Success	200		{object}	boAccount.RegisterReply
 //	@Failure	400		{object}	errorx.ErrorResponse
-//	@Router		/meme_coin [POST]
-func (api *account) createAccount(ctx *gin.Context) {
+//	@Router		/account/register [POST]
+func (api *account) register(ctx *gin.Context) {
 	type body struct {
-		Name        string `valid:"required" json:"name"`
-		Description string `valid:"-" json:"description"`
+		Email    string `valid:"required" json:"email"`
+		Password string `valid:"required" json:"password"`
 	}
 	var reqBody body
 	if err := ctx.BindJSON(&reqBody); err != nil {
 		errorx.RespondWithError(ctx, http.StatusInternalServerError, err)
 		return
 	}
-	if _, err := govalidator.ValidateStruct(reqBody); err != nil || govalidator.HasWhitespaceOnly(reqBody.Name) {
+	if _, err := govalidator.ValidateStruct(reqBody); err != nil {
 		errorx.RespondWithError(ctx, http.StatusBadRequest, errorx.ParamKeyRequired)
 		return
 	}
-
-	args := boAccount.CreateArgs{
-		Name:        reqBody.Name,
-		Description: reqBody.Description,
+	if !govalidator.IsEmail(reqBody.Email) {
+		errorx.RespondWithError(ctx, http.StatusBadRequest, errorx.InvalidEmailFormat)
+		return
 	}
-	reply, err := api.pack.AccountCtrl.Create(ctx, args)
+	if !api.validatePassword(reqBody.Password) {
+		errorx.RespondWithError(ctx, http.StatusBadRequest, errorx.InvalidPasswordFormat)
+		return
+	}
+
+	reply, err := api.pack.AccountCtrl.Register(ctx, boAccount.RegisterArgs{
+		Account: boAccount.Account{
+			Email:    reqBody.Email,
+			Password: reqBody.Password,
+		},
+	})
 	if err != nil {
 		errorx.RespondWithError(ctx, http.StatusBadRequest, err)
 		return
@@ -98,97 +78,73 @@ func (api *account) createAccount(ctx *gin.Context) {
 	ctx.JSON(http.StatusOK, reply)
 }
 
-// updateAccount
+// login
 //
-//	@Summary	Update a meme coin
-//	@Tags		meme_coin
+//	@Summary	Login
+//	@Tags		account
 //	@version	1.0
 //	@produce	json
-//	@Param		id		path	int						true	"id = ?"
-//	@Param		request	body	api.updateAccount.body	true	"Payload to update the description of a meme coin"
-//	@Success	200
-//	@Failure	400	{object}	errorx.ErrorResponse
-//	@Router		/meme_coin/{id} [PATCH]
-func (api *account) updateAccount(ctx *gin.Context) {
-	id, err := strconv.Atoi(ctx.Param("id"))
-	if err != nil {
-		errorx.RespondWithError(ctx, http.StatusBadRequest, errorx.ParamKeyRequired)
-		return
-	}
+//	@Param		request	body		api.login.body	true	"Request payload for login"
+//	@Success	200		{object}	boAccount.LoginReply
+//	@Failure	400		{object}	errorx.ErrorResponse
+//	@Router		/account/login [POST]
+func (api *account) login(ctx *gin.Context) {
 	type body struct {
-		Description string `valid:"-" json:"description"`
+		Email    string `valid:"required" json:"email"`
+		Password string `valid:"required" json:"password"`
 	}
 	var reqBody body
-	if err = ctx.BindJSON(&reqBody); err != nil {
+	if err := ctx.BindJSON(&reqBody); err != nil {
 		errorx.RespondWithError(ctx, http.StatusInternalServerError, err)
 		return
 	}
-	if _, err = govalidator.ValidateStruct(reqBody); err != nil {
+	if _, err := govalidator.ValidateStruct(reqBody); err != nil {
 		errorx.RespondWithError(ctx, http.StatusBadRequest, errorx.ParamKeyRequired)
 		return
 	}
-
-	args := boAccount.UpdateArgs{
-		ID:          int64(id),
-		Description: reqBody.Description,
+	if !govalidator.IsEmail(reqBody.Email) {
+		errorx.RespondWithError(ctx, http.StatusBadRequest, errorx.InvalidEmailFormat)
+		return
 	}
-	if err = api.pack.AccountCtrl.Update(ctx, args); err != nil {
+	if !api.validatePassword(reqBody.Password) {
+		errorx.RespondWithError(ctx, http.StatusBadRequest, errorx.InvalidPasswordFormat)
+		return
+	}
+
+	args := boAccount.LoginArgs{
+		boAccount.Account{
+			Email:    reqBody.Email,
+			Password: reqBody.Password,
+		},
+	}
+	reply, err := api.pack.AccountCtrl.Login(ctx, args)
+	if err != nil {
 		errorx.RespondWithError(ctx, http.StatusBadRequest, err)
 		return
 	}
-	ctx.Status(http.StatusOK)
+	ctx.JSON(http.StatusOK, reply)
 }
 
-// deleteAccount
-//
-//	@Summary	Delete a meme coin
-//	@Tags		meme_coin
-//	@version	1.0
-//	@produce	json
-//	@Param		id	path	int	true	"id = ?"
-//	@Success	200
-//	@Failure	400				{object}	errorx.ErrorResponse
-//	@Router		/meme_coin/{id}	[DELETE]
-func (api *account) deleteAccount(ctx *gin.Context) {
-	id, err := strconv.Atoi(ctx.Param("id"))
-	if err != nil {
-		errorx.RespondWithError(ctx, http.StatusBadRequest, errorx.ParamKeyRequired)
-		return
+func (api *account) validatePassword(password string) bool {
+	if len(password) < 6 || len(password) > 16 {
+		return false
 	}
 
-	args := boAccount.DeleteArgs{
-		ID: int64(id),
-	}
-	if err = api.pack.AccountCtrl.Delete(ctx, args); err != nil {
-		errorx.RespondWithError(ctx, http.StatusBadRequest, err)
-		return
-	}
-	ctx.Status(http.StatusOK)
-}
+	upperRegex := `[A-Z]`
+	lowerRegex := `[a-z]`
+	specialCharRegex := `[()\[\]{}<>+\-*/?,.:;"'_|\~` + "`" + `!@#$%^&=]`
 
-// pokeAccount
-//
-//	@Summary	Poke a meme coin
-//	@Tags		meme_coin
-//	@version	1.0
-//	@produce	json
-//	@Param		id	path	int	true	"id = ?"
-//	@Success	200
-//	@Failure	400						{object}	errorx.ErrorResponse
-//	@Router		/meme_coin/{id}/poke	[POST]
-func (api *account) pokeAccount(ctx *gin.Context) {
-	id, err := strconv.Atoi(ctx.Param("id"))
-	if err != nil {
-		errorx.RespondWithError(ctx, http.StatusBadRequest, errorx.ParamKeyRequired)
-		return
+	if !regexp.MustCompile(upperRegex).MatchString(password) {
+		return false
 	}
 
-	args := boAccount.IncreasePopularityScoreArgs{
-		ID: int64(id),
+	if !regexp.MustCompile(lowerRegex).MatchString(password) {
+		return false
 	}
-	if err = api.pack.AccountCtrl.IncreasePopularityScore(ctx, args); err != nil {
-		errorx.RespondWithError(ctx, http.StatusBadRequest, err)
-		return
+
+	if !regexp.MustCompile(specialCharRegex).MatchString(password) {
+		return false
 	}
-	ctx.Status(http.StatusOK)
+
+	return true
 }

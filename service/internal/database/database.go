@@ -3,9 +3,9 @@ package database
 import (
 	"context"
 	"github.com/redis/go-redis/v9"
+	"glossika/service/internal/config"
 	"go.uber.org/dig"
 	"gorm.io/gorm"
-	"meme_coin_api/service/internal/config"
 )
 
 type GlossikaOut struct {

@@ -9,6 +9,7 @@ type Glossika struct {
 
 	ServiceAddress ServiceAddress           `mapstructure:"service_address"`
 	DBMS           DatabaseManagementSystem `mapstructure:"database_management_system"`
+	JWT            JWT                      `mapstructure:"jwt"`
 }
 
 type ServiceAddress struct {
@@ -34,4 +35,8 @@ type Redis struct {
 	Address  string `mapstructure:"address"`
 	Password string `mapstructure:"password"`
 	DB       int    `mapstructure:"db"`
+}
+
+type JWT struct {
+	Secret string `mapstructure:"secret"`
 }
