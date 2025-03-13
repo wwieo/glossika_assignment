@@ -5,6 +5,7 @@ import (
 	"fmt"
 	"glossika/service/api"
 	"glossika/service/controller/accountCtrl"
+	"glossika/service/controller/merchandiseCtrl"
 	"glossika/service/internal/config"
 	"glossika/service/internal/database"
 	"glossika/service/internal/flags"
@@ -80,6 +81,10 @@ func (srv *glossika) provideController(container *dig.Container) {
 	if err := container.Provide(accountCtrl.New); err != nil {
 		panic(err)
 	}
+
+	if err := container.Provide(merchandiseCtrl.New); err != nil {
+		panic(err)
+	}
 }
 
 type migratePack struct {
@@ -100,6 +105,10 @@ func (srv *glossika) invokeApiRoutes(container *dig.Container) {
 	}
 
 	if err := container.Invoke(api.NewAccount); err != nil {
+		panic(err)
+	}
+
+	if err := container.Invoke(api.NewMerchandise); err != nil {
 		panic(err)
 	}
 }

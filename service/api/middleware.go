@@ -16,7 +16,7 @@ const (
 	BearerPrefix    = "Bearer "
 )
 
-func ValidateTokenMiddleware(jwtConfig config.JWT) gin.HandlerFunc {
+func validateToken(jwtConfig config.JWT) gin.HandlerFunc {
 	return func(ctx *gin.Context) {
 		authHeader := ctx.GetHeader("Authorization")
 		if authHeader == "" {
@@ -53,7 +53,7 @@ func ValidateTokenMiddleware(jwtConfig config.JWT) gin.HandlerFunc {
 	}
 }
 
-func GenerateToken(email string, jwtConfig config.JWT) (string, error) {
+func generateToken(email string, jwtConfig config.JWT) (string, error) {
 	now := time.Now()
 	claims := &boAccount.JWTClaims{
 		Email: email,

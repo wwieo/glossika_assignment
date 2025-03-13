@@ -124,7 +124,7 @@ func (api *account) login(ctx *gin.Context) {
 		errorx.RespondWithError(ctx, http.StatusBadRequest, err)
 		return
 	}
-	reply.Token, err = GenerateToken(args.Email, api.pack.JWT)
+	reply.Token, err = generateToken(args.Email, api.pack.JWT)
 	if err != nil {
 		errorx.RespondWithError(ctx, http.StatusBadRequest, err)
 		return
@@ -162,8 +162,8 @@ func (api *account) validatePassword(password string) bool {
 //	@Tags		account
 //	@version	1.0
 //	@produce	json
-//	@Param		verify_code						path		string	true	"verification code generated during the registration process"
-//	@Success	200								{object}	boAccount.VerifyReply
+//	@Param		verify_code	path	string	true	"verification code generated during the registration process"
+//	@Success	200
 //	@Failure	400								{object}	errorx.ErrorResponse
 //	@Router		/account/verify/{verify_code}	[GET]
 func (api *account) verify(ctx *gin.Context) {
