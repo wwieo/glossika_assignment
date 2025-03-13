@@ -1,6 +1,5 @@
 # Glossika Backend Assignment
-Develop APIs for managing meme coins and containerize the application for
-deployment.
+Develop APIs for registering, verifying, login and mock the get recommendation for assignment.
 
 ![Swagger Presentation](assets/swagger_presentation.png)
 

@@ -2,9 +2,9 @@ services:
   app:
     build:
       context: .
-    container_name: account
+    container_name: glossika_app
     restart: on-failure
-    image: glossika
+    image: glossika_app
     ports:
       - "8000:8000"
     working_dir: /app
@@ -18,7 +18,7 @@ services:
       - ./migrations:/docker-entrypoint-initdb.d
     environment:
       - MYSQL_ALLOW_EMPTY_PASSWORD=true
-      - MYSQL_DATABASE="account"
+      - MYSQL_DATABASE="glossika"
       - MYSQL_USER="root"
       - MYSQL_PASSWORD=""
     ports:
