@@ -14,6 +14,7 @@ const (
 	// database relative
 	noRecord errCode = 4100 + iota
 	recordExisted
+	invalidVerifyCode
 )
 
 var (
@@ -23,4 +24,5 @@ var (
 	PasswordIncorrect     = newErrorResponse(passwordIncorrect, "the password is incorrect")
 	InvalidEmailFormat    = newErrorResponse(invalidEmailFormat, "invalid email format")
 	InvalidPasswordFormat = newErrorResponse(invalidPasswordFormat, "invalid password format")
+	InvalidVerifyCode     = newErrorResponse(invalidVerifyCode, "the account verification code is invalid. Please check it again or request a new one")
 )

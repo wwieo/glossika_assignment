@@ -4,6 +4,7 @@ import (
 	"github.com/asaskevich/govalidator"
 	"github.com/gin-gonic/gin"
 	"glossika/service/controller/accountCtrl"
+	"glossika/service/internal/config"
 	"glossika/service/internal/errorx"
 	boAccount "glossika/service/internal/model/bo/account"
 	"go.uber.org/dig"
@@ -15,7 +16,7 @@ func NewAccount(pack accountPack) {
 	m := &account{pack: pack}
 	group := pack.Root.Group("account")
 	{
-		group.GET("verify", m.register)
+		group.GET("verify/:verify_code", m.verify)
 		group.POST("register", m.register)
 		group.POST("login", m.login)
 	}
@@ -26,6 +27,7 @@ type accountPack struct {
 
 	Root        *gin.RouterGroup
 	AccountCtrl accountCtrl.AccountCtrl
+	JWT         config.JWT
 }
 
 type account struct {
@@ -122,6 +124,11 @@ func (api *account) login(ctx *gin.Context) {
 		errorx.RespondWithError(ctx, http.StatusBadRequest, err)
 		return
 	}
+	reply.Token, err = GenerateToken(args.Email, api.pack.JWT)
+	if err != nil {
+		errorx.RespondWithError(ctx, http.StatusBadRequest, err)
+		return
+	}
 	ctx.JSON(http.StatusOK, reply)
 }
 
@@ -147,4 +154,29 @@ func (api *account) validatePassword(password string) bool {
 	}
 
 	return true
+}
+
+// verify
+//
+//	@Summary	Verify account
+//	@Tags		account
+//	@version	1.0
+//	@produce	json
+//	@Param		verify_code						path		string	true	"verification code generated during the registration process"
+//	@Success	200								{object}	boAccount.VerifyReply
+//	@Failure	400								{object}	errorx.ErrorResponse
+//	@Router		/account/verify/{verify_code}	[GET]
+func (api *account) verify(ctx *gin.Context) {
+	verifyCode := ctx.Param("verify_code")
+
+	args := boAccount.VerifyArgs{
+		VerifyCode: verifyCode,
+	}
+	_, err := api.pack.AccountCtrl.Verify(ctx, args)
+	if err != nil {
+		errorx.RespondWithError(ctx, http.StatusBadRequest, err)
+		return
+	}
+
+	ctx.Status(http.StatusOK)
 }

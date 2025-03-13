@@ -29,5 +29,13 @@ type LoginArgs struct {
 }
 
 type LoginReply struct {
-	Token string `json:"token"`
+	IsVerified bool   `json:"is_verified"`
+	Token      string `json:"token"`
+}
+
+type VerifyArgs struct {
+	VerifyCode string
+}
+
+type VerifyReply struct {
 }

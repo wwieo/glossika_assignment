@@ -40,3 +40,14 @@ func (dao *accountDao) Get(email string) (*model.Account, error) {
 	}
 	return account, nil
 }
+
+func (dao *accountDao) UpdateVerifyStatus(email string, status model.Status) error {
+	if err := dao.db.Table(model.TableAccount.String()).
+		Model(&model.Account{}).
+		Where("email = ?", email).
+		Update("status", status).
+		Error; err != nil {
+		return err
+	}
+	return nil
+}
